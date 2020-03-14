@@ -1,0 +1,12 @@
+language: python
+os: linux
+python: 3.7
+
+install:
+  - sudo apt-get install libgmp-dev libmpfr-dev libmpc-dev
+  - pip install gmpy2==2.1.0b4
+
+script:
+  - python check.py
+  - sqlite3 gaps.db < allgaps.sql
+  - sqlite3 gaps.db 'select count(*) from gaps'
