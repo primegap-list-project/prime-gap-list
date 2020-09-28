@@ -10,6 +10,9 @@ import math
 #   check nextprime
 #   argparse (for check size...)
 
+# Set to True to update merits column in allgaps.sql to a new format
+UPDATE_MERIT_FMT = True
+
 GAPS_SQL = "allgaps.sql"
 
 SMALL_PRIMES = [
@@ -139,17 +142,26 @@ def check():
             print(f"Merit {gen_merit} vs {merit} @{i}: {line}")
             assert False, ("Bad Merit", line, fmerit, gen_merit)
 
-            if UPDATE_MERITS:
-                lines[i] = line.replace(merit, fmt_merit)
-
         if fmt_merit != merit:
             #print(f"Merit {fmt_merit} vs {merit} @{i}: {line}")
             merit_fmt += 1
+            if UPDATE_MERIT_FMT:
+                lines[i] = line.replace(merit, fmt_merit)
+
 
     print(f"Checked {checked} lines, {checked_ends} pairs of endpoints")
     print(f"Prime Digits disagreed on {bad_digits} lines")
     print(f"Merit format disagreed on {merit_fmt} lines")
     print(f"Failed to parse {parse_error} numbers (41 known parse failures)")
+
+
+    if UPDATE_MERIT_FMT:
+        print()
+        print("Updating merit format in", GAPS_SQL)
+        with open("allgaps.sql", "w") as f:
+            for line in lines:
+                assert line.endswith('\n'), line
+                f.write(line)
 
 
 
