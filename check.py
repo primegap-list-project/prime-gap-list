@@ -13,7 +13,7 @@ import math
 # Set to True to update merits column in allgaps.sql to a new format
 UPDATE_MERIT_FMT = False
 
-GAPS_SQL = "allgaps.sql"
+ALLGAPS_SQL = "allgaps.sql"
 
 SMALL_PRIMES = [
     2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43,
@@ -81,7 +81,7 @@ def parse_num(start):
 
 
 def check():
-    with open("allgaps.sql", "r") as f:
+    with open(ALLGAPS_SQL) as f:
         lines = f.readlines()
 
     LINE_RE = re.compile(
@@ -158,7 +158,7 @@ def check():
     if UPDATE_MERIT_FMT and merit_fmt:
         print()
         print(f"Updating merit format for {merit_fmt} lines in {GAPS_SQL!r}")
-        with open("allgaps.sql", "w") as f:
+        with open(ALLGAPS_SQL, "w") as f:
             for line in lines:
                 assert line.endswith('\n'), line
                 f.write(line)
