@@ -11,7 +11,7 @@ import math
 #   argparse (for check size...)
 
 # Set to True to update merits column in allgaps.sql to a new format
-UPDATE_MERIT_FMT = True
+UPDATE_MERIT_FMT = False
 
 GAPS_SQL = "allgaps.sql"
 
@@ -155,9 +155,9 @@ def check():
     print(f"Failed to parse {parse_error} numbers (41 known parse failures)")
 
 
-    if UPDATE_MERIT_FMT:
+    if UPDATE_MERIT_FMT and merit_fmt:
         print()
-        print("Updating merit format in", GAPS_SQL)
+        print(f"Updating merit format for {merit_fmt} lines in {GAPS_SQL!r}")
         with open("allgaps.sql", "w") as f:
             for line in lines:
                 assert line.endswith('\n'), line
