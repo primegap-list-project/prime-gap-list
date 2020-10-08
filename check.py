@@ -85,7 +85,7 @@ def check():
         lines = f.readlines()
 
     LINE_RE = re.compile(
-        r"INSERT INTO gaps VALUES.(\d+),[01],'C','[F?]','[CP]','[\w.&]*',"
+        r"INSERT INTO gaps VALUES.(\d+),[01],'C','[F?]','[CP?]','[\w.&]*',"
         r"(-300|[12][890]\d\d),"
         r"([0-9.]+),([0-9]+),'([^']+)'\);")
 
