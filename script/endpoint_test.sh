@@ -17,7 +17,7 @@ command -v pfgw64
 command -v ecpp-dj
 ecpp-dj -help | head -n 3
 
-for p in `cat tmp/endpoints.txt`; do
+cat "tmp/endpoints.txt" | while read p; do
     ecpp-dj "$p"
 done
 
