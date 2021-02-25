@@ -1,5 +1,7 @@
 *.db
 *.gapcoins.zip
+pfgw.ini
+*.sage.py
 
 bin
 *.config
