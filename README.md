@@ -11,7 +11,7 @@ See
 
 ## The list of current records can be found at
 
-* [allgaps.sql Raw](https://raw.githubusercontent.com/primegap-list-project/prime-gap-list/server/allgaps.sql)
+* [allgaps.sql Raw](https://raw.githubusercontent.com/primegap-list-project/prime-gap-list/master/allgaps.sql)
 * [(offsite) primegaps.cloudygo.com/merits.txt](https://primegaps.cloudygo.com/merits.txt)
 
 ## Submitting new records
@@ -22,5 +22,5 @@ and submit to [primegaps.cloudygo.com](https://primegaps.cloudygo.com/).
 
 ## Travis Continuous Integration
 
-[![Project Status](https://travis-ci.org/primegap-list-project/prime-gap-list.svg?branch=server)](https://travis-ci.org/primegap-list-project/prime-gap-list)
+[![Project Status](https://travis-ci.org/primegap-list-project/prime-gap-list.svg)](https://travis-ci.org/primegap-list-project/prime-gap-list)
 
