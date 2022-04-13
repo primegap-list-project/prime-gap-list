@@ -77,6 +77,8 @@ def parse_num(start):
         b, p, a = map(int, num_match.groups())
         return b ** p + a
 
+    # TODO verify p is prime in first 5 forms
+
     return None
 
 
