@@ -87,7 +87,7 @@ def check():
         lines = f.readlines()
 
     LINE_RE = re.compile(
-        r"INSERT INTO gaps VALUES.(\d+),[01],'C','[F?]','[CP?]','[\w.&]*',"
+        r"INSERT INTO gaps VALUES.(\d+),[01],'C','[F?]','[CcDdTt?]','[\w.&]*',"
         r"(-300|[12][890]\d\d),"
         r"([0-9.]+),([0-9]+),'([^']+)'\);")
 
@@ -154,7 +154,7 @@ def check():
     print(f"Checked {checked} lines, {checked_ends} pairs of endpoints")
     print(f"Prime Digits disagreed on {bad_digits} lines")
     print(f"Merit format disagreed on {merit_fmt} lines")
-    print(f"Failed to parse {parse_error} numbers (41 known parse failures)")
+    print(f"Failed to parse {parse_error} numbers (32 known parse failures)")
 
 
     if UPDATE_MERIT_FMT and merit_fmt:
