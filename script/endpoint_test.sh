@@ -4,7 +4,7 @@ LAST_GAP=${1:-5000}
 
 echo "Testing gaps <= $LAST_GAP"
 
-sqlite3 gaps.db "select PRINTF('%s%c%s+%d%c',startprime,char(10),startprime,gapsize) FROM gaps WHERE gapsize <= $LAST_GAP AND primecert = 'P' ORDER BY gapsize" > tmp/endpoints.txt
+sqlite3 gaps.db "select PRINTF('%s%c%s+%d%c',startprime,char(10),startprime,gapsize) FROM gaps WHERE gapsize <= $LAST_GAP AND gapcert != 'C' ORDER BY gapsize" > tmp/endpoints.txt
 
 wc tmp/endpoints.txt
 [ -s tmp/endpoints.txt ]
