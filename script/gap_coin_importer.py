@@ -85,12 +85,13 @@ def attempt_merge():
 
             log = f"Improved record {gap} {merit=:.4f} found by Gapcoin"
             print("\t", log)
-            assert gmpy2.is_prime(int(start))
-            assert gmpy2.is_prime(int(start) + gap)
+            start = int(start)
+            end = int(start) + gap
+            assert gmpy2.is_prime(start)
+            assert gmpy2.is_prime(end)
+            assert gmpy2.next_prime(start) == end
 
-
-            # TODO: How to make sure the write format? check.py?
-            lines[old[1]] = "INSERT INTO gaps VALUES({},0,'C','?','P','{}',{},{:.4f},{},'{}');\n".format(
+            lines[old[1]] = "INSERT INTO gaps VALUES({},0,'C','?','D','{}',{},{:.4f},{},'{}');\n".format(
                     gap, 'Gapcoin', year, merit, len(start), start)
 
 
