@@ -57,7 +57,6 @@ def test_fast(gap, start):
 
     # After 2400 digits (gaps around > 200K) would be faster to use
     # primegapverify.is_prime_large AKA pfgw64
-    if
 
     if not primegapverify.is_prime_large(start, "0"):
         return -2
