@@ -21,7 +21,7 @@ def mark(argv):
     print(f"Attempting to verify and marking {new_first} as first occurrence")
     print()
 
-    data = verify_list.parse(verify_list.load())
+    data = verify_list.parse(verify_list.load(), verbose=False)
     print("All records parsed!")
     print()
 

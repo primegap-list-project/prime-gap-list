@@ -29,16 +29,15 @@ def load():
     assert False
 
 
-def parse(lines):
+def parse(lines, verbose=True):
     data = []
-    skipped = 0
     for line in lines:
         gap = int(line[0])
         assert 1 <= gap <= 20 * 10 ** 6
         start = primegapverify.parse(line[9])
         if not start:
-            print("Skipping", gap, "\t", line[9])
-            skipped += 1
+            if verbose:
+                print("Skipping", gap, "\t", line[9])
             continue
         end = start + gap
         data.append((gap, start, end, line[9]))
