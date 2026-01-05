@@ -39,6 +39,11 @@ def mark(argv):
     test(start)
     test(start + gap)
 
+    if gap < 2000:
+        print("\tTesting inner gap")
+        for i in range(1, gap):
+            assert not gmpy2.is_prime(start + i, 1000), (gap, i)
+
     with open(verify_list.GAPS_SQL) as f:
         look_for = f"({gap},"
         for line in f:
@@ -47,11 +52,17 @@ def mark(argv):
         else:
             assert f"{gap} not found"
 
-    print(f"line: {line!s}")
+    print(f"line: {line.strip()!s}")
     replace = ",'C','?',"
     assert replace in line
     new_line = line.replace(replace, ",'C','F',")
-    print(f"aftr: {new_line!s}")
+
+    # Mark numbers < 2^80 as determisticly prime
+    if start < 2 ** 80 and ",'F','D'," in new_line:
+        new_line = new_line.replace(",'F','D',", ",'F','C',")
+
+    print(f"aftr: {new_line.strip()!s}")
+
 
     for l in fileinput.input(verify_list.GAPS_SQL, inplace=True):
         if l == line:
