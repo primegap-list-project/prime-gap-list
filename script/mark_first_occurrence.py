@@ -39,7 +39,7 @@ def mark(argv):
     test(start)
     test(start + gap)
 
-    if gap < 2000:
+    if gap < 5000:
         print("\tTesting inner gap")
         for i in range(1, gap):
             assert not gmpy2.is_prime(start + i, 1000), (gap, i)
