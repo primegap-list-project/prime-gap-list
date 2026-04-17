@@ -28,6 +28,7 @@ def download_and_cache():
     return fn
 
 def process_gapcoin(fn):
+    rows = 0
     with zipfile.ZipFile(fn) as zip:
         with zip.open(INNER_FILENAME, mode="r") as gapcoin_dump_file:
             with io.TextIOWrapper(gapcoin_dump_file) as text:
@@ -35,8 +36,10 @@ def process_gapcoin(fn):
                 # Skip headers
                 headers = next(reader)
                 assert headers[0] == "start", headers
+                print("\tgapcoin headers:", headers)
 
                 for row in reader:
+                    rows += 1
                     # gap, merit, start
                     yield (int(row[2]), float(row[3]), row[0])
 
@@ -71,12 +74,21 @@ def attempt_merge():
     year = datetime.date.today().year
 
     found = set()
+    rows = 0
+    equal = 0
     improved = 0
     updates = 0
     fn = download_and_cache()
     for gap, merit, start in process_gapcoin(fn):
+        rows += 1
         assert gap in record_gaps, ("Needs INSERT logic", gap)
         old = record_gaps[gap]
+
+        if str(start) in old[2]:
+            assert ",'Gapcoin'," in old[2], old
+            assert abs(old[0] - merit) <= 0.0001, old
+            equal += 1
+
         if old[0] + 0.0001 < merit:
             updates += 1
             improved += merit - old[0]
@@ -96,6 +108,8 @@ def attempt_merge():
 
 
     print()
+    print(f"{rows} rows in gapcoins.zip")
+    print(f"{equal} equal to existing record")
     print("{} updating by Gapcoint (merit +{:.2f}) gaps {} to {}".format(
         updates, improved, min(found, default="N/A"), max(found, default="N/A")))
 
