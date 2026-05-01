@@ -14,9 +14,9 @@ def test(n):
     assert gmpy2.is_prime(n, 1000)
     assert all(method(n) for method in methods)
 
-def mark(argv):
-    assert len(argv) == 2, "Need first_occurrence as int"
-    new_first = int(argv[1])
+def mark(number):
+    new_first = int(number)
+    assert 1500 < new_first < 3000, "Doesn't look like a first occurrence"
 
     print(f"Attempting to verify and marking {new_first} as first occurrence")
     print()
@@ -72,4 +72,5 @@ def mark(argv):
 
 
 if __name__ == "__main__":
-    mark(sys.argv)
+    for number in sys.argv[1:]:
+        mark(number)
