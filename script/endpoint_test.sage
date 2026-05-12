@@ -1,6 +1,5 @@
-import tqdm
 tests = 0
-for line in tqdm.tqdm(open("tmp/endpoints_ints.txt").readlines()):
+for line in open("tmp/endpoints_ints.txt").readlines():
     line = line.strip()
     if line:
         tests += 1
@@ -9,6 +8,3 @@ for line in tqdm.tqdm(open("tmp/endpoints_ints.txt").readlines()):
 
 
 print("tested", tests)
-
-# save the last certificate
-
