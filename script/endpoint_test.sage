@@ -6,5 +6,4 @@ for line in open("tmp/endpoints_ints.txt").readlines():
         x = Integer(line)
         assert x.is_prime(proof=True), x
 
-
 print("tested", tests)

@@ -28,6 +28,6 @@ done
 
 # Preprocess to decimal form (for sage)
 rm -f pfgw.ini pfgw.log pfgw.out tmp/endpoints_ints.txt
-pfgw64 -od tmp/endpoints.txt | cut -d':' -f2 | tail +4 > tmp/endpoints_ints.txt
+pfgw64 -od tmp/endpoints.txt | grep -v ':' | cut -d':' -f2 > tmp/endpoints_ints.txt
 
 sage script/endpoint_test.sage
