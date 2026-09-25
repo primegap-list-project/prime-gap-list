@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 set -eux
 
 LAST_GAP=${1:-5000}
