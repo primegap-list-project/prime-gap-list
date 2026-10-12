@@ -23,7 +23,6 @@ INTERVALS = [
     "borderprp(30000-34999).txt",
     "borderprp(35000-99999).txt",
 ]
-INNER_FILENAME = "primegap-dump.txt"
 GAPS_SQL = "allgaps.sql"
 
 CREDIT_MAP = {
@@ -65,7 +64,7 @@ def attempt_merge():
         lines = f.readlines()
 
     LINE_RE = re.compile(
-        r"INSERT INTO gaps VALUES.(\d+),[01],'C','[F?]','[CP?]','[\w.&]*',"
+        r"INSERT INTO gaps VALUES.(\d+),[01],'C','[F?]','[CDdt]','[\w.& ]*',"
         r"(-300|[12][890]\d\d),"
         r"([0-9.]+),([0-9]+),'([^']+)'\);")
 
@@ -104,7 +103,7 @@ def attempt_merge():
                 records.append(record)
             else:
                 old = record_gaps[gap]
-                if old[0] + 0.0001 < merit:
+                if old[0] + 0.001 < merit:
                     updates += 1
                     improved += merit - old[0]
                     found.add(gap)
@@ -130,9 +129,10 @@ def attempt_merge():
             if name:
                 to_test.append((primegapverify.parse(start), (gap, year + "-01-01", name, merit, start)))
 
-    print()
-    for (who_a, who_b), count in credit.most_common():
-        print(f"{count:<5} {who_a} with {who_b}")
+    if False:
+        print()
+        for (who_a, who_b), count in credit.most_common():
+            print(f"{count:<5} {who_a} with {who_b}")
 
     to_test.sort()
     print ("Tests:", len(to_test))
