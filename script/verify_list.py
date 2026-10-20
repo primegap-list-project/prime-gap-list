@@ -55,6 +55,7 @@ def parse(lines, verbose=True):
             if verbose:
                 print("Skipping", gap, "\t", start_str)
             continue
+
         data.append((gap, start, start_str))
 
     return data
@@ -89,7 +90,7 @@ def test_fast(gap, start, start_str):
             if composite[k]:
                 continue
 
-            if primegapverify.is_prime_large(start + k, str(k)):
+            if primegapverify.is_prime_large(start + k, f"{start_str} + {k}"):
                 return k
 
     if primegapverify.is_prime_large(start + gap, start_str + " + " + str(gap)):
@@ -111,8 +112,8 @@ def verify(test_method):
         if test == gap:
             print(f"{gap:6d} Verified {timing:>9} seconds | {start_str}")
         else:
-            print(f"{gap} MISMATCH! {test} vs {gap} for {start_str}")
-            assert test == gap, "Mismatch for gap=" + str(gap)
+            print(f"{gap} MISMATCH! {test} for {start_str}")
+            assert test == gap, f"Mismatch {test} for gap {gap}"
 
 
 def test_mp(row):
@@ -135,8 +136,8 @@ def verify_mp():
             if test == gap:
                 print(f"{gap:6d} Verified {timing:>9} seconds | {start_str}")
             else:
-                print(f"{gap} MISMATCH! {test} vs {gap} for {start_str}")
-                assert test == gap, "Mismatch for gap=" + str(gap)
+                print(f"{gap} MISMATCH! {test} for {start_str}")
+                assert test == gap, f"Mismatch {test} for gap {gap}"
 
 
 if __name__ == "__main__":

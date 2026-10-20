@@ -46,7 +46,7 @@ def process_interval(fn):
         for line in border_file.readlines():
             if line[0].isdigit() and line[0] != '0':
                 # X, prev, next, gap, merit
-                row =  re.split("\s*\t", line)
+                row =  re.split(r"\s*\t", line)
                 if "?" in row[1] or "?" in row[2]:
                     continue
 
