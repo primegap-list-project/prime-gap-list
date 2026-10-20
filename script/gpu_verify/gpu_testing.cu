@@ -14,13 +14,10 @@
 
 #include <atomic>
 #include <cassert>
-#include <chrono>
-#include <csignal>
 #include <cstdint>
 #include <cstdio>
-#include <iostream>
+#include <fstream>
 #include <memory>
-#include <mutex>
 #include <thread>
 #include <vector>
 
@@ -32,9 +29,6 @@
 
 #include "miller_rabin.h"
 
-using namespace std::chrono;
-using std::cout;
-using std::endl;
 using std::vector;
 namespace py = pybind11;
 
@@ -43,25 +37,23 @@ namespace py = pybind11;
 
 // Can't import gpu_testing because it needs to import gap_seach_gpu.h / GPUBatch
 
-#ifdef GPU_BITS
-const int BITS = GPU_BITS;
-#else
-const int BITS = 1024;
-#endif
-
-const int WINDOW_BITS = 4 + (BITS > 256) + (BITS > 512);
-const int THREADS_PER_INSTANCE = (BITS <= 512) ? 4 : 8;
-const size_t GPU_BATCH_SIZE = 8 * 1024;
+const size_t GPU_BATCH_SIZE = 4 * 1024;
 
 
-std::atomic<bool> is_running{false};
-std::mutex merge_mtx;
 std::atomic<uint32_t> tests_run{0};
 
 //**********************************GLOBALS********************************** //
 //*************************************************************************** //
 
-typedef mr_params_t<THREADS_PER_INSTANCE, BITS, WINDOW_BITS> gpu_params;
+typedef mr_params_t<4,  512, 5> params_512;
+typedef mr_params_t<8, 1024, 6> params_1024;
+typedef mr_params_t<8, 2048, 7> params_2048;
+typedef mr_params_t<16, 4096, 8> params_4096;
+
+test_runner_t<params_512>  runner_512{GPU_BATCH_SIZE};
+test_runner_t<params_1024> runner_1024{GPU_BATCH_SIZE};
+test_runner_t<params_2048> runner_2048{GPU_BATCH_SIZE};
+test_runner_t<params_4096> runner_4096{GPU_BATCH_SIZE};
 
 class GPUBatch {
     public:
@@ -75,8 +67,7 @@ class GPUBatch {
 
         // If z[i] should be tested
         vector<uint8_t>  active;
-        // gap, negative for start and end
-        vector<int32_t> gap;
+        vector<uint32_t> offset;
         // Result from GPU
         vector<int>  result;
 
@@ -89,13 +80,13 @@ class GPUBatch {
                 z.push_back(&z_array[i]);
             }
 
-            gap.resize(n, 0);
+            offset.resize(n, 0);
             active.resize(n, 0);
             result.resize(n, -1);
         }
 
         ~GPUBatch() {
-            //cout << "~GPUBatch" << endl;
+            //printf("~GPUBatch\n");
             for (size_t i = 0; i < elements; i++) {
                 mpz_clear(z_array[i]);
             }
@@ -105,11 +96,30 @@ class GPUBatch {
         GPUBatch(const GPUBatch&) = delete;
         GPUBatch& operator=(const GPUBatch&) = delete;
 
+        void reset() {
+            i = 0;
+            // Turn off all entries in batch
+            std::fill_n(active.begin(), GPU_BATCH_SIZE, false);
+            // Mark all results as invalid
+            std::fill_n(result.begin(), GPU_BATCH_SIZE, -1);
+        }
+
         void run() {
-            runner.run_test(i, z, result);
+            auto bits = 8 + mpz_sizeinbase(*z[i-1], 2);
+            if (bits < 512) {
+                runner_512.run_test(i, z, result);
+            } else if (bits < 1024) {
+                runner_1024.run_test(i, z, result);
+            } else if (bits < 2048) {
+                runner_2048.run_test(i, z, result);
+            } else if (bits < 4096) {
+                runner_4096.run_test(i, z, result);
+            } else {
+                printf("Number requires %lu bits, no kernel big enough!\n", bits);
+                exit(1);
+            }
         }
     private:
-        test_runner_t<gpu_params> runner{GPU_BATCH_SIZE};
 
         size_t capacity() const {
             return elements;
@@ -120,92 +130,78 @@ class GPUBatch {
 
 
 
-inline void fill_batch(GPUBatch& batch, vector<uint32_t> offsets) {
-    batch.i = 0;
-    // Turn off all entries in batch
-    std::fill_n(batch.active.begin(), GPU_BATCH_SIZE, false);
-    // Mark all results as invalid
-    std::fill_n(batch.result.begin(), GPU_BATCH_SIZE, -1);
+GPUBatch batch(GPU_BATCH_SIZE);
+mpz_t start_z;
 
-    {
-        assert( test_data.state == TestData::ACTIVE );
-        uint32_t gpu_i = batch.i;  // [GPU] batch index
-        size_t j = test_data.test_i;
-        for (; j < test_data.unknown_m_i.size() && gpu_i < GPU_BATCH_SIZE; j++) {
-            // Skip any element where a previous prime was found.
-            // Happens when primes from last X weren't removed from active_m before sieve started.
-            uint32_t m_i = test_data.unknown_m_i[j];
-            uint32_t index = m_i >> 1;
-
-            // Should happen only with a few primes found in last X.
-            if (test_data.found_prime_m_i[index >> 5] & (1 << (index & 31)))
-                continue;
-
-            batch.active[gpu_i] = true;
-            batch.m_i[gpu_i] = m_i;
-            gpu_i++;
-        }
-
-        test_data.test_i = j;
-        batch.i = gpu_i;
-    }
-
-    assert( batch.i <= GPU_BATCH_SIZE);
-}
-
-
-void signal_callback_handler(int) {
-    if (is_running == 1) {
-       cout << endl;
-       cout << "Caught CTRL+C stopping" << endl;
-       is_running = 0;
-    } else {
-       cout << "Caught 2nd CTRL+C, exit(2) now." << endl;
-       exit(2);
-       exit(2);
-    }
-}
-
-int main(int argc, char* argv[]) {
+// This is your setup function
+void initialize_module() {
+    printf("Setting up gpu_testing.cu\n");
     printf("TESTING PRIMES ON GPU\n");
-    printf("BITS=%d\n", BITS);
     printf("PRP/BATCH=%ld\n", GPU_BATCH_SIZE);
-    printf("THREADS/PRP=%d\n", THREADS_PER_INSTANCE);
     setlocale(LC_NUMERIC, "");
 
-    is_running = true;
+    mpz_init(start_z);
+}
 
-    // Setup CTRL+C catcher
-    signal(SIGINT, signal_callback_handler);
 
-    auto start_t = high_resolution_clock::now();
 
-    GPUBatch batch(GPU_BATCH_SIZE);
+int32_t test_gap(uint32_t gap, std::string start, std::vector<uint32_t> offsets) {
+    std::vector<uint8_t> result;
 
-    mpz_t tmp;
-    mpz_init(tmp);
-    std::ifstream f("to_test.txt");
-    uint32_t gap;
-    std::string start;
+    batch.reset();
+    mpz_set_str(start_z, start.c_str(), 10);
+    uint32_t gpu_i = 0;
+    for (auto offset : offsets) {
+        batch.active[gpu_i] = true;
+        batch.offset[gpu_i] = offset;
+        mpz_add_ui(*batch.z[gpu_i], start_z, offset);
 
-    while (is_running) {
-        // Queue and run next batch
-        while (f >> gap >> start) {
-            mpz_set_str(tmp);
+        batch.i = ++gpu_i;
+
+        if (batch.i == GPU_BATCH_SIZE) {
+            batch.run();
+            tests_run += GPU_BATCH_SIZE;
+
+            for (uint32_t j = 0; j < batch.i; j++) {
+                auto tmp = batch.offset[j];
+                if( batch.result[j] != (tmp == 0 || tmp == gap) ) {
+                    printf("ERROR in gap %u at %u prime: %u\n",
+                            gap, tmp, batch.result[j]);
+                    if (tmp == 0 || tmp == gap) {
+                        return -1;
+                    }
+                    return tmp;
+                }
+            }
+            batch.reset();
+            gpu_i = 0;
         }
-
-        double total_t = duration<double>(high_resolution_clock::now() - start_t).count();
-        printf("\ttotal tests     : %'u (%'u/sec)\n",
-                tests_run.load(), (uint32_t) (tests_run / total_t));
     }
 
-    mpz_clear(tmp);
+    if (gpu_i > 0) {
+        batch.run();
+        tests_run += GPU_BATCH_SIZE;
 
-    double total_t = duration<double>(high_resolution_clock::now() - start_t).count();
-    setlocale(LC_NUMERIC, "");
-    printf("\nGPU Timings (%.0f seconds):\n", total_t);
-    printf("\ttotal tests     : %'u (%'u/sec)\n",
-            tests_run.load(), (uint32_t) (tests_run / total_t));
-    printf("\n");
-    setlocale(LC_NUMERIC, "C");
+        for (uint32_t j = 0; j < batch.i; j++) {
+            auto tmp = batch.offset[j];
+            if( batch.result[j] != (tmp == 0 || tmp == gap) ) {
+                printf("ERROR in gap %u at %u prime: %u\n",
+                        gap, tmp, batch.result[j]);
+                    if (tmp == 0 || tmp == gap) {
+                        return -1;
+                    }
+                    return tmp;
+            }
+        }
+        batch.reset();
+    }
+
+    return gap;
+}
+
+PYBIND11_MODULE(gpu_testing, m) {
+    initialize_module();
+
+    m.doc() = "Test primality of numbers with CGBN miller_rabin";
+    m.def("test_gap", &test_gap, "Takes start as a base10 string and offsets to test");
 }
