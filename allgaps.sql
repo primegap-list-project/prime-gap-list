@@ -126639,6 +126639,7 @@ INSERT INTO credits VALUES('AndreasH','Andreas Thomas Höglund', '', 'Andreas H�
 INSERT INTO credits VALUES('ApplRssr','Kenneth I. Appel and J. Barkley Rosser','','Appel and Rosser');
 INSERT INTO credits VALUES('B.Kehrig','Brian Kehrig','','Brian Kehrig');
 INSERT INTO credits VALUES('Be.Nyman','Bertil Nyman','','Bertil Nyman');
+INSERT INTO credits VALUES('B.Rouyea','Blaize Rouyea','rb labs','Blaize Rouyea');
 INSERT INTO credits VALUES('Blnchtte','Gilles Blanchette','','Gilles Blanchette');
 INSERT INTO credits VALUES('CBastTOS','Carlos Bastos','Computer code by Tomás Oliveira e Silva.','Carlos Bastos [Tomás Oliveira e Silva]');
 INSERT INTO credits VALUES('CKernTOS','Cristian Kern','Computer code by Tomás Oliveira e Silva.','Cristian Kern [Tomás Oliveira e Silva]');
