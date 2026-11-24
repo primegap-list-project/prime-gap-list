@@ -25,7 +25,7 @@ def mark(number):
     print("All records parsed!")
     print()
 
-    gap, start, end, start_str = min(row for row in data if row[0] == new_first)
+    gap, start, start_str = min(row for row in data if row[0] == new_first)
 
     print(f"Gap: {gap}  | start: {start} | {start_str}")
 
@@ -72,5 +72,7 @@ def mark(number):
 
 
 if __name__ == "__main__":
-    for number in sys.argv[1:]:
+    numbers = sys.argv[1:]
+    del sys.argv[1:]
+    for number in numbers:
         mark(number)
