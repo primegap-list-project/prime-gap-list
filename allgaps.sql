@@ -128591,6 +128591,7 @@ INSERT INTO gaps VALUES(8193558,0,'C','?','d','AndreasH',2023,12.3094,289083,'66
 INSERT INTO gaps VALUES(11660160,0,'C','?','d','A.Renyer',2026,12.2702,412703,'740615324929618924691386797925869149 * 951109# / 42 -7542428');
 INSERT INTO gaps VALUES(16045848,0,'C','?','d','AndreasH',2024,18.0669,385713,'1217 * 888887# / 23# - 7636494');
 CREATE TABLE credits (abbreviation TEXT,name TEXT,ack TEXT,display TEXT);
+INSERT INTO credits VALUES('A.Garg'  ,' Arnav Garg','Birla Institute of Technology and Science, Pilani','Arnav Garg');
 INSERT INTO credits VALUES('A.Renyer','Andrew Renyer','','Andrew Renyer');
 INSERT INTO credits VALUES('A.Walker','Andrew John Walker','','Andrew John Walker');
 INSERT INTO credits VALUES('AEWestrn','A. E. Western','','A. E. Western');
